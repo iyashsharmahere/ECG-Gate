@@ -1,0 +1,10 @@
+{
+    "classes": [
+        "USABLE",
+        "DEGRADED",
+        "REACQUIRE"
+    ],
+    "usable_threshold": 0.9,
+    "input_length": 360,
+    "sampling_rate": 360
+}

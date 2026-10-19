@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ECG-GATE — AI-powered ECG signal quality gate">
+  <title>ECG-GATE · Signal Quality AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <header class="nav-shell">
+    <nav class="navbar" aria-label="Primary navigation">
+      <a class="brand" href="#top" aria-label="ECG-GATE home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span><strong>ECG-GATE</strong><small>SIGNAL QUALITY AI</small></span>
+      </a>
+      <div class="nav-links">
+        <a href="#analyze">Analyze</a>
+        <a href="#technology">Technology</a>
+        <a href="#performance">Performance</a>
+        <a href="#about">About</a>
+      </div>
+      <div class="model-status"><i></i><span>MODEL READY</span></div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <canvas id="hero-canvas" aria-hidden="true"></canvas>
+      <div class="hero-grid"></div>
+      <div class="hero-content reveal">
+        <div class="eyebrow"><span></span> HC-02 · SIGNAL QUALITY & REACQUISITION</div>
+        <h1>Know when an ECG is <em>good enough to trust.</em></h1>
+        <p class="hero-copy">Analyze a 360-sample ECG waveform and estimate whether the signal is <b>USABLE</b>, <b>DEGRADED</b>, or requires <b>REACQUISITION</b>.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#analyze">Analyze ECG <span>↗</span></a>
+          <a class="btn btn-ghost" href="#technology">See how it works <span>↓</span></a>
+        </div>
+        <div class="hero-specs">
+          <span><b>360</b> SAMPLES</span><span><b>360 Hz</b> SAMPLING</span><span><b>3</b> QUALITY STATES</span><span><b>0.90</b> USABLE GATE</span>
+        </div>
+      </div>
+      <div class="hero-corner">LIVE INFERENCE INTERFACE · LOCAL MODEL</div>
+    </section>
+
+    <section class="section analysis-section" id="analyze">
+      <div class="section-heading reveal">
+        <div><span class="kicker">01 / ANALYSIS</span><h2>Analyze your ECG</h2></div>
+        <p>Upload exactly 360 samples to run the signal-quality gate.</p>
+      </div>
+
+      <div class="analysis-layout">
+        <div class="upload-card glass reveal">
+          <div class="card-topline"><span>INPUT GATE</span><span class="mono">CSV / 360 × 1</span></div>
+          <div id="drop-zone" class="drop-zone" tabindex="0" role="button" aria-label="Upload ECG CSV">
+            <div class="upload-orb"><span>↑</span></div>
+            <h3>Drop your ECG here</h3>
+            <p>or choose a CSV file from your device</p>
+            <button id="choose-btn" class="btn btn-small" type="button">Choose CSV</button>
+            <input id="file-input" type="file" accept=".csv,text/csv" hidden>
+          </div>
+          <div class="file-row" id="file-row" hidden>
+            <div class="file-icon">CSV</div><div class="file-meta"><strong id="filename">—</strong><span id="file-state">—</span></div><button id="clear-btn" class="icon-btn" type="button" aria-label="Clear selected file">×</button>
+          </div>
+          <div class="validation" id="validation"><span class="validation-dot"></span><span id="validation-text">Awaiting ECG input</span><b id="sample-counter">0 / 360</b></div>
+          <button id="analyze-btn" class="btn btn-primary full" type="button" disabled>Analyze ECG <span>→</span></button>
+          <div class="loading-line" id="loading-line" hidden><span></span><span>Analyzing signal</span><b>LIVE</b></div>
+          <div class="error-box" id="error-box" role="alert" hidden></div>
+        </div>
+
+        <div class="wave-card glass reveal" id="wave-card">
+          <div class="card-topline"><span>ECG WAVEFORM</span><div><span class="chip">360 SAMPLES</span><span class="chip">360 Hz</span></div></div>
+          <div class="wave-wrap"><canvas id="ecg-chart"></canvas><div id="wave-empty" class="wave-empty"><span class="mini-wave">∿</span><p>Your validated waveform will appear here.</p><small>INPUT WINDOW · 1 SECOND</small></div></div>
+          <div class="wave-footer"><span>AMPLITUDE</span><span class="mono">SAMPLE INDEX 000 — 359</span><span>1.00 s WINDOW</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section result-section" id="result-section" hidden>
+      <div class="section-heading reveal"><div><span class="kicker">02 / DECISION</span><h2>Signal quality result</h2></div><p>Decision and confidence are returned by the live model inference endpoint.</p></div>
+      <div class="result-layout">
+        <div class="decision-card glass reveal" id="decision-card">
+          <div class="card-topline"><span>FINAL DECISION</span><span id="decision-tag" class="decision-tag">MODEL OUTPUT</span></div>
+          <div class="decision-visual"><canvas id="result-canvas" aria-hidden="true"></canvas><div class="decision-orb"><span id="decision-glyph">✓</span></div></div>
+          <div class="decision-word" id="decision-word">—</div>
+          <p id="decision-explanation">—</p>
+          <div class="confidence-block"><span>MODEL CONFIDENCE</span><strong id="confidence">—</strong></div>
+        </div>
+
+        <div class="prob-card glass reveal">
+          <div class="card-topline"><span>CONFIDENCE DISTRIBUTION</span><span class="mono">SOFTMAX OUTPUT</span></div>
+          <div class="prob-list">
+            <div class="prob-row"><div><span>USABLE</span><b id="prob-usable">—</b></div><div class="bar"><i id="bar-usable"></i></div></div>
+            <div class="prob-row"><div><span>DEGRADED</span><b id="prob-degraded">—</b></div><div class="bar"><i id="bar-degraded"></i></div></div>
+            <div class="prob-row"><div><span>REACQUIRE</span><b id="prob-reacquire">—</b></div><div class="bar"><i id="bar-reacquire"></i></div></div>
+          </div>
+          <div class="trace">
+            <div class="trace-title">DECISION TRACE</div>
+            <div class="trace-grid">
+              <div><span>MODEL PREDICTION</span><b id="trace-prediction">—</b></div>
+              <div><span>USABLE THRESHOLD</span><b id="trace-threshold">—</b></div>
+              <div><span>SAFETY GATE</span><b id="trace-gate">—</b></div>
+              <div><span>SAMPLES RECEIVED</span><b id="trace-samples">—</b></div>
+            </div>
+          </div>
+          <div class="safety-warning" id="safety-warning" hidden><strong>SAFETY GATE APPLIED</strong><p id="safety-reason">—</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section performance" id="performance">
+      <div class="section-heading reveal"><div><span class="kicker">03 / DEVELOPMENT EVALUATION</span><h2>Model performance</h2></div><p>Reported development and stress-test metrics. These do not establish clinical validity.</p></div>
+      <div class="metrics-grid">
+        <article class="metric glass reveal"><span>MACRO-F1</span><strong>1.00</strong><small>Development evaluation</small></article>
+        <article class="metric glass reveal"><span>DANGEROUS FALSE-USABLE</span><strong>0%</strong><small>Development evaluation</small></article>
+        <article class="metric glass reveal"><span>BRIER SCORE</span><strong>1.36 × 10⁻⁶</strong><small>Calibration metric</small></article>
+        <article class="metric glass reveal"><span>UNSEEN ROBUSTNESS</span><strong>99.95%</strong><small>Stress-test robustness</small></article>
+        <article class="metric glass reveal"><span>MODEL PARAMETERS</span><strong>44,611</strong><small>3-class CNN</small></article>
+      </div>
+      <div class="disclaimer reveal"><span>◈</span><p>ECG-GATE is a research and engineering presentation layer, not a medical device. Development metrics must not be interpreted as patient-specific diagnosis, treatment, clinical decision support, or patient-safety validation.</p></div>
+    </section>
+
+    <section class="section technology" id="technology">
+      <div class="section-heading reveal"><div><span class="kicker">04 / TECHNOLOGY</span><h2>From waveform to gate</h2></div><p>A compact inference pipeline designed around a fixed 360-sample signal window.</p></div>
+      <div class="pipeline glass reveal">
+        <div class="pipeline-step"><span>01</span><strong>ECG CSV</strong><small>Prepared waveform</small></div><i>→</i>
+        <div class="pipeline-step"><span>02</span><strong>360 SAMPLES</strong><small>1 second · 360 Hz</small></div><i>→</i>
+        <div class="pipeline-step accent"><span>03</span><strong>CNN</strong><small>44,611 parameters</small></div><i>→</i>
+        <div class="pipeline-step"><span>04</span><strong>PROBABILITIES</strong><small>3-class softmax</small></div><i>→</i>
+        <div class="pipeline-step gate"><span>05</span><strong>SAFETY GATE</strong><small>USABLE ≥ 0.90</small></div><i>→</i>
+        <div class="pipeline-step"><span>06</span><strong>DECISION</strong><small>USABLE / DEGRADED / REACQUIRE</small></div>
+      </div>
+      <div class="architecture reveal">
+        <div class="architecture-copy"><span class="kicker">NETWORK VIEW</span><h3>Signal features become a quality decision.</h3><p>The supplied trained network is loaded directly at inference time. This interface does not retrain, replace, or reconstruct the model.</p></div>
+        <div class="network-stack">
+          <div>Conv1D</div><span>↓</span><div>Conv1D</div><span>↓</span><div>Conv1D</div><span>↓</span><div>Global Average Pooling</div><span>↓</span><div>Dense</div><span>↓</span><div class="softmax">Softmax · 3 classes</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section demo-section" id="demo">
+      <div class="section-heading reveal"><div><span class="kicker">05 / DEMO LAB</span><h2>Stress the gate</h2></div><p>Optional local demo files use the same <span class="mono">/predict</span> endpoint. Missing files are never replaced with fabricated results.</p></div>
+      <div class="demo-grid">
+        <button class="demo-card glass reveal" data-demo="clean_ecg.csv"><span>01</span><strong>Clean ECG</strong><small>Reference signal</small></button>
+        <button class="demo-card glass reveal" data-demo="noise_20db.csv"><span>02</span><strong>20 dB Noise</strong><small>USABLE family</small></button>
+        <button class="demo-card glass reveal" data-demo="noise_10db.csv"><span>03</span><strong>10 dB Noise</strong><small>DEGRADED family</small></button>
+        <button class="demo-card glass reveal" data-demo="baseline_wander.csv"><span>04</span><strong>Baseline Wander</strong><small>DEGRADED family</small></button>
+        <button class="demo-card glass reveal" data-demo="noise_3db.csv"><span>05</span><strong>3 dB Noise</strong><small>REACQUIRE family</small></button>
+        <button class="demo-card glass reveal" data-demo="dropout_30.csv"><span>06</span><strong>30% Dropout</strong><small>REACQUIRE family</small></button>
+      </div>
+    </section>
+
+    <section class="section about" id="about">
+      <div class="about-card glass reveal">
+        <div><span class="kicker">ECG-GATE / HC-02</span><h2>A presentation layer around a real inference model.</h2></div>
+        <p>The interface visualizes the actual class probabilities returned by the Flask backend. It never substitutes a browser-side prediction. The conservative USABLE threshold is surfaced explicitly so the final decision can be audited at a glance.</p>
+        <div class="about-foot"><span>LOCAL INFERENCE</span><span>NO CLIENT-SIDE MODEL</span><span>NO FABRICATED OUTPUT</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer><span>ECG-GATE</span><span>AI-POWERED ECG SIGNAL QUALITY GATE</span><span>HC-02 · RESEARCH DEMO</span></footer>
+
+  <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
+  <script>
+    if (!window.Chart) {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"><\/script>');
+    }
+  </script>
+  <script type="module" src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
